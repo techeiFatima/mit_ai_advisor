@@ -1,0 +1,905 @@
+<title>Course 6 Advisor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --ground:#F1F4F7; --surface:#FFFFFF; --surface-2:#F7F9FB; --line:#D9E0E7;
+  --line-strong:#BFCAD4; --ink:#101519; --ink-2:#3D4A55; --muted:#66757F;
+  --accent:#1D5F8A; --accent-ink:#FFFFFF; --accent-soft:#E4EEF5;
+  --ok:#1B6E45; --ok-soft:#E1F1E8; --miss:#A63A2B; --miss-soft:#FAE7E3;
+  --warn:#8A6210; --warn-soft:#F8EEDA;
+  --radius:7px; --shadow:0 1px 2px rgba(16,21,25,.06),0 6px 20px rgba(16,21,25,.05);
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0D1115; --surface:#151B21; --surface-2:#1B222A; --line:#28323C;
+    --line-strong:#3A4855; --ink:#E7EDF3; --ink-2:#B4C1CD; --muted:#8A99A6;
+    --accent:#68B0DC; --accent-ink:#0D1115; --accent-soft:#18303F;
+    --ok:#63C48F; --ok-soft:#14281F; --miss:#E88B7A; --miss-soft:#2C1A17;
+    --warn:#DDAE55; --warn-soft:#2A2113;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0D1115; --surface:#151B21; --surface-2:#1B222A; --line:#28323C;
+  --line-strong:#3A4855; --ink:#E7EDF3; --ink-2:#B4C1CD; --muted:#8A99A6;
+  --accent:#68B0DC; --accent-ink:#0D1115; --accent-soft:#18303F;
+  --ok:#63C48F; --ok-soft:#14281F; --miss:#E88B7A; --miss-soft:#2C1A17;
+  --warn:#DDAE55; --warn-soft:#2A2113;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.01em;line-height:1.25}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ---------- chrome ---------- */
+.topbar{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:baseline;
+  padding:14px 22px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.brand span{color:var(--accent)}
+.disclaimer{font-size:12px;color:var(--muted);max-width:52ch}
+.topbar .spacer{flex:1}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:99px;
+  border:1px solid var(--line);background:var(--surface-2);font-size:11.5px;
+  font-family:var(--mono);color:var(--ink-2);white-space:nowrap}
+.chip.warn{border-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+
+.shell{display:grid;grid-template-columns:290px minmax(0,1fr);gap:20px;
+  max-width:1320px;margin:0 auto;padding:20px 22px 56px}
+@media (max-width:900px){.shell{grid-template-columns:1fr;padding:16px}}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow)}
+.rail{align-self:start;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
+@media (max-width:900px){.rail{position:static;max-height:none}}
+.rail-in{display:flex;flex-direction:column;gap:16px;padding:16px}
+.rail h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);
+  font-weight:600}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:500;color:var(--ink-2)}
+input[type=text],input[type=number],select{padding:7px 9px;border:1px solid var(--line-strong);
+  border-radius:5px;background:var(--surface-2);width:100%}
+input[type=text]:focus,select:focus{border-color:var(--accent)}
+.row{display:flex;gap:8px}
+.btn{padding:7px 12px;border:1px solid var(--line-strong);border-radius:5px;
+  background:var(--surface-2);cursor:pointer;font-weight:500;font-size:13.5px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08);color:var(--accent-ink)}
+.btn.sm{padding:4px 9px;font-size:12.5px}
+.taglist{display:flex;flex-wrap:wrap;gap:5px}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:2.5px 5px 2.5px 8px;
+  border-radius:5px;background:var(--accent-soft);color:var(--accent);
+  font-family:var(--mono);font-size:12px;font-weight:500}
+.tag button{background:none;border:0;cursor:pointer;color:inherit;opacity:.6;
+  font-size:14px;line-height:1;padding:0 2px}
+.tag button:hover{opacity:1}
+.tag.plain{background:var(--surface-2);color:var(--ink-2);font-family:var(--sans);
+  border:1px solid var(--line)}
+.hint{font-size:11.5px;color:var(--muted);line-height:1.45}
+.checks{display:flex;flex-direction:column;gap:5px}
+.checks label{display:flex;gap:7px;align-items:center;font-size:13px;color:var(--ink-2)}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:2px;padding:5px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);margin-bottom:16px;overflow-x:auto}
+.tabs button{flex:1;padding:8px 12px;border:0;background:none;cursor:pointer;
+  border-radius:5px;font-weight:500;color:var(--muted);white-space:nowrap;font-size:13.5px}
+.tabs button[aria-selected=true]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.tabs button:hover[aria-selected=false]{background:var(--surface-2);color:var(--ink)}
+.view{display:none}.view.on{display:block}
+
+/* ---------- controls ---------- */
+.controls{display:flex;flex-wrap:wrap;gap:8px;padding:14px;border-bottom:1px solid var(--line)}
+.controls input[type=text]{flex:1;min-width:190px}
+.controls select{width:auto;min-width:112px}
+
+/* ---------- course rows ---------- */
+.count{padding:9px 14px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);
+  font-family:var(--mono)}
+.list{display:flex;flex-direction:column}
+.course{border-bottom:1px solid var(--line)}
+.course:last-child{border-bottom:0}
+.chead{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:baseline;
+  width:100%;padding:11px 14px;background:none;border:0;text-align:left;cursor:pointer}
+.chead:hover{background:var(--surface-2)}
+.cnum{font-family:var(--mono);font-weight:600;font-size:13.5px;color:var(--accent);
+  font-variant-numeric:tabular-nums}
+.ctitle{font-weight:500;min-width:0}
+.cmeta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.units{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pill{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;
+  text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.miss{background:var(--miss-soft);color:var(--miss)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.flat{background:var(--surface-2);color:var(--muted);border:1px solid var(--line);
+  text-transform:none;letter-spacing:0;font-weight:500;font-family:var(--mono)}
+.cbody[hidden]{display:none}
+.cbody{padding:2px 14px 18px;display:grid;gap:14px}
+.desc{color:var(--ink-2);max-width:68ch}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 14px;font-size:13px}
+.kv dt{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;
+  padding-top:2px}
+.kv dd{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- prerequisite tree ---------- */
+.tree{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:5px;padding:10px 12px;overflow-x:auto}
+.tnode{display:flex;gap:8px;align-items:baseline;padding:1.5px 0;white-space:nowrap}
+.tkids{margin-left:15px;border-left:1px dotted var(--line-strong);padding-left:11px}
+.tmark{width:1.1em;flex:none;font-weight:600}
+.t-ok .tmark{color:var(--ok)} .t-miss .tmark{color:var(--miss)} .t-unk .tmark{color:var(--warn)}
+.top{color:var(--muted);font-weight:600;letter-spacing:.05em}
+.tleaf{color:var(--ink-2)}
+
+/* ---------- callouts ---------- */
+.note{border-left:3px solid var(--line-strong);padding:9px 12px;background:var(--surface-2);
+  border-radius:0 5px 5px 0;font-size:13px;color:var(--ink-2)}
+.note.warn{border-left-color:var(--warn);background:var(--warn-soft);color:var(--warn)}
+.note.rec{border-left-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.note b{font-weight:600}
+.empty{padding:34px 18px;text-align:center;color:var(--muted)}
+
+/* ---------- plan ---------- */
+.planbar{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;padding:14px;
+  border-bottom:1px solid var(--line)}
+.planbar .field{width:auto}
+.terms{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:14px;padding:14px}
+.term{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface-2)}
+.term header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  padding:9px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+.term h3{font-size:13.5px}
+.term ol{list-style:none;margin:0;padding:8px 12px 12px;display:flex;flex-direction:column;gap:9px}
+.term li{display:grid;gap:2px}
+.why{font-size:11.5px;color:var(--muted)}
+
+/* ---------- data view ---------- */
+.checkrow{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;padding:8px 14px;
+  border-bottom:1px solid var(--line);font-size:13px;align-items:baseline}
+.checkrow:last-child{border-bottom:0}
+.checkrow .st{font-family:var(--mono);font-size:11px;font-weight:600}
+.st.pass{color:var(--ok)} .st.warn{color:var(--warn)} .st.fail{color:var(--miss)}
+.sect{padding:16px 14px;border-bottom:1px solid var(--line)}
+.sect:last-child{border-bottom:0}
+.sect h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);
+  margin-bottom:9px;font-weight:600}
+.sect ul{margin:0;padding-left:18px;color:var(--ink-2);display:flex;flex-direction:column;gap:6px}
+.sect p{margin:0 0 9px;color:var(--ink-2);max-width:70ch}
+footer{max-width:1320px;margin:0 auto;padding:0 22px 40px;color:var(--muted);font-size:12px;
+  line-height:1.6}
+footer code{font-family:var(--mono);font-size:11px}
+</style>
+
+<div class="topbar">
+  <div class="brand">Course&nbsp;6 <span>Advisor</span></div>
+  <div class="disclaimer">Unofficial student project. Not affiliated with or endorsed by MIT.
+    Always confirm with your department and the official catalog.</div>
+  <div class="spacer"></div>
+  <span class="chip" id="srcChip">catalog snapshot</span>
+  <span class="chip warn">no degree requirements loaded</span>
+</div>
+
+<div class="shell">
+  <aside class="panel rail">
+    <div class="rail-in">
+      <h2>Your record</h2>
+      <div class="hint">Everything on this page is computed from what you enter here.
+        Stored only in this browser.</div>
+
+      <div class="row">
+        <div class="field" style="flex:1">
+          <label for="fYear">Year</label>
+          <select id="fYear">
+            <option value="">—</option><option>1</option><option>2</option>
+            <option>3</option><option>4</option><option>5+</option>
+          </select>
+        </div>
+        <div class="field" style="flex:1">
+          <label for="fMajor">Course</label>
+          <input type="text" id="fMajor" placeholder="6-4" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fDone">Completed subjects</label>
+        <input type="text" id="fDone" list="subjects" placeholder="6.100A — then Enter"
+               autocomplete="off">
+        <div class="taglist" id="doneTags"></div>
+      </div>
+
+      <div class="field">
+        <label for="fNow">Currently taking</label>
+        <input type="text" id="fNow" list="subjects" placeholder="6.1010 — then Enter"
+               autocomplete="off">
+        <div class="taglist" id="nowTags"></div>
+        <div class="hint">Counts toward corequisites only.</div>
+      </div>
+
+      <div class="field">
+        <label>GIRs completed</label>
+        <div class="checks" id="girBox"></div>
+        <div class="hint">Not in the dataset — tell us, or prerequisites naming a GIR
+          stay unverifiable.</div>
+      </div>
+
+      <div class="field">
+        <label for="fInt">Interests</label>
+        <input type="text" id="fInt" placeholder="machine learning — then Enter"
+               autocomplete="off">
+        <div class="taglist" id="intTags"></div>
+        <div class="hint">Affects ranking only, never whether you're eligible.</div>
+      </div>
+
+      <div class="field">
+        <label><input type="checkbox" id="fPerm" style="width:auto;margin-right:6px">
+          Assume instructor permission</label>
+        <div class="hint">Off by default: we can't know if it'd be granted.</div>
+      </div>
+
+      <div class="row">
+        <button class="btn sm" id="btnDemo">Load example</button>
+        <button class="btn sm" id="btnClear">Clear</button>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tab-explore" aria-selected="true">Explore</button>
+      <button role="tab" id="tab-eligible" aria-selected="false">Eligible now</button>
+      <button role="tab" id="tab-plan" aria-selected="false">Plan</button>
+      <button role="tab" id="tab-data" aria-selected="false">Data &amp; limits</button>
+    </div>
+
+    <section class="view on panel" id="view-explore">
+      <div class="controls">
+        <input type="text" id="q" placeholder="Search titles and descriptions, or a subject number">
+        <select id="fLevel"><option value="">Any level</option>
+          <option value="U">Undergraduate</option><option value="G">Graduate</option></select>
+        <select id="fTerm"><option value="">Any term</option><option>Fall</option>
+          <option>Spring</option><option>IAP</option><option>Summer</option></select>
+        <select id="fElig"><option value="">Any eligibility</option>
+          <option value="ok">Eligible</option><option value="miss">Missing prereqs</option>
+          <option value="unk">Can't verify</option></select>
+      </div>
+      <div class="count" id="exploreCount"></div>
+      <div class="list" id="results"></div>
+    </section>
+
+    <section class="view panel" id="view-eligible">
+      <div class="controls">
+        <select id="eTerm"><option value="">Any term</option><option>Fall</option>
+          <option>Spring</option><option>IAP</option><option>Summer</option></select>
+        <select id="eLevel"><option value="">Any level</option>
+          <option value="U">Undergraduate</option><option value="G">Graduate</option></select>
+        <label class="hint" style="display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="eSort" checked style="width:auto"> rank by my interests</label>
+      </div>
+      <div class="count" id="eligCount"></div>
+      <div class="list" id="eligList"></div>
+    </section>
+
+    <section class="view panel" id="view-plan">
+      <div class="planbar">
+        <div class="field"><label for="pTerms">Semesters</label>
+          <select id="pTerms"><option>2</option><option selected>4</option>
+            <option>6</option><option>8</option></select></div>
+        <div class="field"><label for="pStart">Starting</label>
+          <select id="pStart"><option>Fall</option><option>Spring</option></select></div>
+        <div class="field"><label for="pUnits">Units per term</label>
+          <input type="number" id="pUnits" value="48" min="12" max="72" step="3"
+                 style="width:96px"></div>
+        <div class="field"><label for="pEmph">Emphasis</label>
+          <select id="pEmph"></select></div>
+        <button class="btn primary" id="btnPlan">Build plan</button>
+      </div>
+      <div id="planOut"></div>
+    </section>
+
+    <section class="view panel" id="view-data">
+      <div class="sect">
+        <h3>What this is</h3>
+        <p>A deterministic advisor over a parsed snapshot of MIT's Course&nbsp;6 subject
+          listings. Prerequisites are parsed into boolean expression trees and evaluated
+          against your record — no language model is involved in anything on this page,
+          so the same inputs always give the same answer.</p>
+        <p>Every eligibility verdict is one of three values. <b>Eligible</b> and
+          <b>missing prerequisites</b> are computed. <b>Can't verify</b> means a
+          requirement couldn't be read — an instructor-permission clause, or a GIR you
+          haven't recorded. An unverifiable requirement is never rounded up to a yes.</p>
+      </div>
+      <div class="sect">
+        <h3>What it does not know</h3>
+        <ul>
+          <li><b>Degree requirements.</b> No GIRs, HASS, CI-H/CI-M, major, minor or
+            concentration requirements are in this dataset. There is no progress bar here
+            because there is no authoritative source behind one.</li>
+          <li><b>Other departments.</b> Course 6 subject listings only. Prerequisites
+            naming subjects outside Course 6 are shown but can't be looked up.</li>
+          <li><b>Communication requirements.</b> The snapshot dropped every CI-M and CI-H
+            designation before it was written — 6.UAT is a CI-M subject and carries no such
+            marker here. Flagged, not silently accepted.</li>
+          <li><b>When it was current.</b> The snapshot carries no fetch date, so offerings
+            may be stale.</li>
+          <li><b>Instructors.</b> Recovered by a text heuristic; some are missing or wrong.</li>
+          <li><b>51 subjects have no description</b> — jointly listed, with the text living
+            under another department's number.</li>
+        </ul>
+      </div>
+      <div class="sect">
+        <h3>Ingestion quality report</h3>
+        <div id="checks"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<datalist id="subjects"></datalist>
+
+<footer>
+  <div id="prov"></div>
+  <div style="margin-top:6px">Course data reproduced from the MIT subject catalog for
+    academic planning. This tool is not an official MIT service and its output is not
+    an academic record.</div>
+</footer>
+
+<script>
+const DATA = /*__CATALOG_DATA__*/null/*__END__*/;
+const COURSES = DATA.courses;
+
+/*__EVAL_START__*/
+/* ---------------- subject-number canonicalisation ----------------
+   Mirrors normalize.canonical(): 6.5400[J], 6.5400J and 6.5400 are one subject. */
+function canon(s){
+  let x = String(s||"").trim().replace(/\s+/g,"").replace(/\.$/,"");
+  if(x.endsWith("[J]")) x = x.slice(0,-3);
+  else if(/[0-9A-Z]J$/i.test(x)) x = x.slice(0,-1);
+  return x.toUpperCase();
+}
+
+const BY_NUM = new Map();
+for(const c of COURSES){
+  BY_NUM.set(canon(c.id), c);
+  for(const a of (c.xl||[])) if(!BY_NUM.has(canon(a))) BY_NUM.set(canon(a), c);
+}
+const getCourse = n => BY_NUM.get(canon(n)) || null;
+
+/* ---------------- prerequisite evaluation ----------------
+   A direct port of services/prerequisite_engine.py. The trees are parsed in
+   Python and shipped with the page, so only the evaluator lives here and the
+   two implementations cannot drift on grammar. Three-valued throughout:
+   an unreadable requirement is UNKNOWN and never SATISFIED. */
+const SAT="SATISFIED", NOT="NOT_SATISFIED", UNK="UNKNOWN";
+const andOf = v => v.some(x=>x===NOT) ? NOT : (v.some(x=>x===UNK) ? UNK : SAT);
+const orOf  = v => v.some(x=>x===SAT) ? SAT : (v.some(x=>x===UNK) ? UNK : NOT);
+
+function evaluate(node, ctx){
+  const missing=[], unknown=[];
+  function walk(n){
+    if(!n) return [SAT,{op:"NONE",status:SAT}];
+    switch(n.op){
+      case "NONE": return [SAT,{op:"NONE",status:SAT}];
+      case "COURSE":{
+        const key = n.canonical || canon(n.id);
+        const st = ctx.completed.has(key) ? SAT : NOT;
+        if(st===NOT) missing.push(n.id);
+        return [st,{op:"COURSE",id:n.id,status:st}];
+      }
+      case "GIR":{
+        const st = ctx.gir.has(n.id) ? SAT : UNK;
+        if(st===UNK) unknown.push("GIR not recorded: "+n.id);
+        return [st,{op:"GIR",id:n.id,status:st}];
+      }
+      case "PERMISSION":{
+        const who = n.who||"instructor";
+        const st = ctx.perms.has(who) ? SAT : UNK;
+        if(st===UNK) unknown.push("requires permission of "+who);
+        return [st,{op:"PERMISSION",id:"permission of "+who,status:st}];
+      }
+      case "COREQ":{
+        let [st,d] = walk(n.operand);
+        if(st!==SAT){
+          // A corequisite may be taken alongside, so in-progress counts here.
+          const sub = evaluate(n.operand, {...ctx,
+            completed:new Set([...ctx.completed,...ctx.inProgress])});
+          if(sub.status===SAT) return [SAT,{op:"COREQ",status:SAT,operand:sub.detail}];
+        }
+        return [st,{op:"COREQ",status:st,operand:d}];
+      }
+      case "OPAQUE":
+        unknown.push("unparsed requirement: "+n.text);
+        return [UNK,{op:"OPAQUE",id:n.text,status:UNK}];
+      case "AND": case "OR":{
+        const res=(n.operands||[]).map(walk);
+        const st = n.op==="AND" ? andOf(res.map(r=>r[0])) : orOf(res.map(r=>r[0]));
+        return [st,{op:n.op,status:st,operands:res.map(r=>r[1])}];
+      }
+      default:
+        unknown.push("unrecognised requirement");
+        return [UNK,{op:String(n.op),status:UNK}];
+    }
+  }
+  const [status,detail]=walk(node);
+  return {status, detail,
+          missing: status===SAT ? [] : [...new Set(missing)].sort(),
+          unknown: [...new Set(unknown)].sort()};
+}
+
+/*__EVAL_END__*/
+
+/* ---------------- profile ---------------- */
+const KEY="course6advisor.profile.v1";
+const blank = () => ({year:"",major:"",done:[],now:[],gir:[],interests:[],perm:false});
+let P = blank();
+const GIRS=["Calculus I (GIR)","Calculus II (GIR)","Physics I (GIR)","Physics II (GIR)",
+            "Chemistry (GIR)","Biology (GIR)"];
+
+function load(){
+  try{ const r=localStorage.getItem(KEY); if(r) P={...blank(),...JSON.parse(r)}; }
+  catch(e){ /* private mode or blocked storage: run with an empty profile */ }
+}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(P)); }catch(e){} }
+
+function ctx(){
+  return {completed:new Set(P.done.map(canon)),
+          inProgress:new Set(P.now.map(canon)),
+          gir:new Set(P.gir),
+          perms:new Set(P.perm?["instructor","department"]:[])};
+}
+const evalCourse = c => evaluate(c.pa, ctx());
+
+/* ---------------- small helpers ---------------- */
+const el = (t,cls,txt)=>{const n=document.createElement(t);
+  if(cls)n.className=cls; if(txt!=null)n.textContent=txt; return n;};
+const $ = s => document.querySelector(s);
+const STOP=new Set(["a","an","and","are","as","at","be","by","can","course","courses","for",
+ "from","how","i","in","into","is","it","me","mit","of","on","or","should","some","take",
+ "that","the","to","want","what","which","with","class","classes","subject","subjects"]);
+const toks = s => (String(s||"").toLowerCase().match(/[a-z0-9]+/g)||[]).filter(t=>!STOP.has(t));
+const unitStr = c => c.u ? `${c.u[0]}-${c.u[1]}-${c.u[2]}` : "arranged";
+const totalUnits = c => c.u ? c.u[3] : null;
+
+const EXPANDED=new Set();
+const PILL={[SAT]:["ok","eligible"],[NOT]:["miss","missing prereqs"],[UNK]:["warn","can't verify"]};
+const KEYOF={[SAT]:"ok",[NOT]:"miss",[UNK]:"unk"};
+
+/* interest scoring - mirrors planning_engine.interest_score: a multi-word
+   interest scores only when every token appears in the same field. */
+function interestScore(c, interests){
+  if(!interests.length) return [0,[]];
+  const T=new Set(toks(c.t)), D=new Set(toks(c.d));
+  let s=0; const m=[];
+  for(const i of interests){
+    const it=toks(i); if(!it.length) continue;
+    if(it.every(t=>T.has(t))){ s+=10; m.push(i); }
+    else if(it.every(t=>D.has(t))){ s+=4; m.push(i); }
+    else if(it.length>1) s += 0.5*it.filter(t=>T.has(t)||D.has(t)).length;
+  }
+  return [s,[...new Set(m)]];
+}
+
+/* ---------------- rendering ---------------- */
+function treeNode(d){
+  const wrap=el("div");
+  const cls = d.status===SAT?"t-ok":(d.status===NOT?"t-miss":"t-unk");
+  const mark = d.status===SAT?"✓":(d.status===NOT?"✗":"?");
+  const line=el("div","tnode "+cls);
+  line.append(el("span","tmark",mark));
+  if(d.op==="AND"||d.op==="OR") line.append(el("span","top",d.op));
+  else if(d.op==="COREQ") line.append(el("span","top","COREQ"));
+  else line.append(el("span","tleaf", d.id || d.op));
+  wrap.append(line);
+  const kids = d.operands || (d.operand?[d.operand]:[]);
+  if(kids.length){
+    const box=el("div","tkids");
+    kids.forEach(k=>box.append(treeNode(k)));
+    wrap.append(box);
+  }
+  return wrap;
+}
+
+function courseRow(c,{score=0,matched=[]}={}){
+  const ev=evalCourse(c);
+  const row=el("div","course");
+  const head=el("button","chead");
+  head.setAttribute("aria-expanded","false");
+  head.append(el("span","cnum",c.id));
+  head.append(el("span","ctitle",c.t));
+  const meta=el("span","cmeta");
+  meta.append(el("span","units",unitStr(c)));
+  const [pc,pt]=PILL[ev.status];
+  meta.append(el("span","pill "+pc,pt));
+  head.append(meta);
+  row.append(head);
+
+  const body=el("div","cbody");
+  let built=false;
+  const setOpen=open=>{
+    if(open&&!built){ buildBody(body,c,ev,matched); built=true; }
+    body.hidden=!open;
+    head.setAttribute("aria-expanded",String(open));
+    if(open) EXPANDED.add(c.id); else EXPANDED.delete(c.id);
+  };
+  setOpen(EXPANDED.has(c.id));
+  head.addEventListener("click",()=>setOpen(body.hidden));
+  row.append(body);
+  return row;
+}
+
+function buildBody(body,c,ev,matched){
+  if(c.st){
+    body.append(el("div","note","Jointly listed — the catalog puts the description under "
+      +c.st+", which is outside this dataset."));
+  }
+  if(c.d) body.append(el("div","desc",c.d));
+
+  const dl=el("dl","kv");
+  const add=(k,v)=>{ if(v==null||v==="")return;
+    dl.append(el("dt",null,k));
+    const dd=el("dd"); if(v instanceof Node) dd.append(v); else dd.textContent=v;
+    dl.append(dd); };
+  add("Level", c.lv==="U"?"Undergraduate":"Graduate");
+  add("Units", c.u ? `${c.u[0]}-${c.u[1]}-${c.u[2]} — ${c.u[3]} total (lecture–lab–prep)`
+                   : "Arranged");
+  add("Offered", c.tm.join(", ") + (c.tn?` (${c.tn})`:""));
+  if(c.ay) add("Alternating", Object.entries(c.ay)
+    .map(([y,s])=>`${y}: ${s==="not_offered"?"not offered":"offered"}`).join(" · "));
+  if(c.nr) add("Note","Not offered regularly; consult department");
+  add("Prerequisite", c.pr || "None listed");
+  add("Corequisite", c.cr);
+  if(c.xl) add("Same subject as", c.xl.join(", "));
+  if(c.mw) add("Meets with", c.mw.join(", "));
+  if(c.cx) add("No credit with", c.cx.join(", "));
+  if(c.at) add("Attributes", c.at.join(", "));
+  if(c.rp) add("Repeatable","Can be repeated for credit");
+  if(c.pdf) add("Grading","P/D/F option");
+  if(c.el) add("Enrollment","Limited");
+  if(c.ins) add("Instructors", c.ins.join(", ") + "  (heuristic)");
+  body.append(dl);
+
+  if(c.pa){
+    const h=el("div");
+    h.append(el("div","hint","Prerequisite tree, evaluated against your record:"));
+    const t=el("div","tree"); t.append(treeNode(ev.detail)); h.append(t);
+    body.append(h);
+  }
+
+  const verdict=el("div","note "+(ev.status===SAT?"":(ev.status===UNK?"warn":"")));
+  if(ev.status===SAT){
+    verdict.innerHTML="<b>Computed:</b> your record satisfies every prerequisite listed "
+      +"for this subject.";
+  }else if(ev.status===NOT){
+    verdict.innerHTML="<b>Computed:</b> not yet — still needed: "
+      +ev.missing.map(m=>`<span class="mono">${m}</span>`).join(", ")+".";
+  }else{
+    verdict.innerHTML="<b>Can't verify:</b> "+ev.unknown.join("; ")
+      +(ev.missing.length?`. Also missing: ${ev.missing.map(m=>
+        `<span class="mono">${m}</span>`).join(", ")}`:"")
+      +". This is not a no — it's a requirement this dataset can't check.";
+  }
+  body.append(verdict);
+
+  if(matched&&matched.length){
+    const r=el("div","note rec");
+    r.innerHTML="<b>Recommendation:</b> matches your stated interest in "
+      +matched.join(", ")+". That's a suggestion, not a requirement.";
+    body.append(r);
+  }
+
+  const acts=el("div","row");
+  const mk=(label,list,name)=>{
+    const b=el("button","btn sm",label);
+    b.addEventListener("click",()=>{ addTo(name,c.id); });
+    if(list.map(canon).includes(canon(c.id))) b.disabled=true;
+    return b;
+  };
+  acts.append(mk("Mark completed",P.done,"done"));
+  acts.append(mk("Taking now",P.now,"now"));
+  body.append(acts);
+}
+
+/* ---------------- views ---------------- */
+function renderExplore(){
+  const q=$("#q").value.trim(), lv=$("#fLevel").value, tm=$("#fTerm").value,
+        eg=$("#fElig").value;
+  const qt=toks(q);
+  const qn=new Set((q.toUpperCase().match(/[0-9A-Z]{1,4}\.[A-Z0-9]{2,6}/g)||[]).map(canon));
+  const out=[];
+  for(const c of COURSES){
+    if(lv&&c.lv!==lv) continue;
+    if(tm&&!c.tm.includes(tm)) continue;
+    if(eg&&KEYOF[evalCourse(c).status]!==eg) continue;
+    let score=0; const matched=[];
+    if(qn.has(canon(c.id))) score+=20;
+    if(qt.length){
+      const T=new Set(toks(c.t)), D=new Set(toks(c.d));
+      for(const t of qt){ if(T.has(t)){score+=8;matched.push(t);} else if(D.has(t)){score+=1;matched.push(t);} }
+    }
+    if(!qt.length&&!qn.size) score=1;
+    if(score>0) out.push([score,c]);
+  }
+  out.sort((a,b)=> b[0]-a[0] || (a[1].id<b[1].id?-1:1));
+  const list=$("#results"); list.textContent="";
+  $("#exploreCount").textContent =
+    `${out.length} of ${COURSES.length} subjects`+(q?` matching “${q}”`:"");
+  if(!out.length){ list.append(el("div","empty","No subjects match those filters.")); return; }
+  const frag=document.createDocumentFragment();
+  out.slice(0,220).forEach(([s,c])=>
+    frag.append(courseRow(c,{matched:interestScore(c,P.interests)[1]})));
+  list.append(frag);
+  if(out.length>220) list.append(el("div","count",`showing first 220 of ${out.length}`));
+}
+
+function renderEligible(){
+  const tm=$("#eTerm").value, lv=$("#eLevel").value, rank=$("#eSort").checked;
+  const held=new Set([...P.done.map(canon),...P.now.map(canon)]);
+  const rows=[];
+  for(const c of COURSES){
+    if(held.has(canon(c.id))) continue;
+    if(tm&&!c.tm.includes(tm)) continue;
+    if(lv&&c.lv!==lv) continue;
+    if(evalCourse(c).status!==SAT) continue;
+    const [s,m]=rank?interestScore(c,P.interests):[0,[]];
+    rows.push([s,c,m]);
+  }
+  rows.sort((a,b)=> b[0]-a[0] || (a[1].id<b[1].id?-1:1));
+  $("#eligCount").textContent =
+    `${rows.length} subjects with every prerequisite satisfied`
+    + (tm?` in ${tm}`:"") + " — computed from your record";
+  const list=$("#eligList"); list.textContent="";
+  if(!rows.length){
+    list.append(el("div","empty", P.done.length
+      ? "Nothing is fully eligible under these filters. Subjects needing instructor permission or an unrecorded GIR appear as “can't verify” under Explore."
+      : "Add the subjects you've completed in the left panel to see what opens up."));
+    return;
+  }
+  const frag=document.createDocumentFragment();
+  rows.slice(0,220).forEach(([s,c,m])=>frag.append(courseRow(c,{score:s,matched:m})));
+  list.append(frag);
+  if(rows.length>220) list.append(el("div","count",`showing first 220 of ${rows.length}`));
+}
+
+/* Greedy term-by-term scheduler - a port of services/planning_engine.build_plan.
+   Constraints are hard (prerequisites, term offered, unit cap, equivalents);
+   interests only reorder the candidates that already qualify. */
+function buildPlan({numTerms,startTerm,cap,emphasis}){
+  const CYCLE=["Fall","Spring"];
+  const completed=new Set([...P.done.map(canon),...P.now.map(canon)]);
+  const excluded=new Set();
+  const equivalents=c=>[...(c.cx||[]),...(c.mw||[]),...(c.xl||[])].map(canon);
+  for(const n of completed){ const c=getCourse(n); if(c) equivalents(c).forEach(x=>excluded.add(x)); }
+
+  const terms=[];
+  const start=Math.max(0,CYCLE.indexOf(startTerm));
+  for(let i=0;i<numTerms;i++){
+    const term=CYCLE[(start+i)%CYCLE.length];
+    const cands=[];
+    for(const c of COURSES){
+      const key=canon(c.id);
+      if(completed.has(key)||excluded.has(key)) continue;
+      if(!c.tm.includes(term)) continue;
+      const units=totalUnits(c);
+      if(units==null) continue;                       // "arranged" can't be packed
+      // "Not offered regularly; consult department" - naming a term for these
+      // would claim more than the catalog does.
+      if(c.nr) continue;
+      const ev=evaluate(c.pa,{completed,inProgress:new Set(),
+                              gir:new Set(P.gir),
+                              perms:new Set(P.perm?["instructor","department"]:[])});
+      if(ev.status!==SAT) continue;
+      const [s,m]=interestScore(c,emphasis);
+      cands.push({s,c,units,m});
+    }
+    cands.sort((a,b)=> b.s-a.s || (a.c.id<b.c.id?-1:1));
+    const picked=[]; let total=0;
+    for(const k of cands){
+      if(picked.length>=5) break;
+      if(total+k.units>cap) continue;
+      if(excluded.has(canon(k.c.id))) continue;
+      equivalents(k.c).forEach(x=>excluded.add(x));
+      const why=["prerequisites satisfied",`offered in ${term}`];
+      if(k.m.length) why.push("matches interest: "+k.m.slice(0,3).join(", "));
+      else if(emphasis.length) why.push("fills remaining units");
+      picked.push({...k,why}); total+=k.units;
+    }
+    picked.forEach(k=>{ completed.add(canon(k.c.id)); equivalents(k.c).forEach(x=>excluded.add(x)); });
+    terms.push({term,label:`${term} · term ${i+1}`,picked,total});
+  }
+  return terms;
+}
+
+function renderPlan(){
+  const out=$("#planOut"); out.textContent="";
+  const emphasisSel=$("#pEmph").value;
+  const emphasis = emphasisSel==="__all__" ? P.interests
+                 : (emphasisSel==="__none__" ? [] : [emphasisSel]);
+  const terms=buildPlan({numTerms:+$("#pTerms").value, startTerm:$("#pStart").value,
+                         cap:+$("#pUnits").value||48, emphasis});
+
+  const caveat=el("div","note warn");
+  caveat.innerHTML="<b>This plan checks prerequisites, term of offering and your unit "
+    +"cap — nothing else.</b> It does not verify degree requirements, because no "
+    +"authoritative requirements source is loaded. Treat it as a feasible shortlist, "
+    +"not a degree audit.";
+  const wrap=el("div"); wrap.style.padding="14px 14px 0"; wrap.append(caveat); out.append(wrap);
+
+  const grid=el("div","terms");
+  for(const t of terms){
+    const box=el("div","term");
+    const h=el("header");
+    h.append(el("h3",null,t.label));
+    h.append(el("span","units",`${t.total} units`));
+    box.append(h);
+    if(!t.picked.length){
+      box.append(el("div","empty","Nothing eligible with a known unit count this term."));
+    }else{
+      const ol=el("ol");
+      for(const k of t.picked){
+        const li=el("li");
+        const top=el("div");
+        top.append(el("span","cnum",k.c.id+" "));
+        top.append(el("span",null,k.c.t));
+        li.append(top);
+        li.append(el("div","why",`${k.units} units · ${k.why.join(" · ")}`));
+        ol.append(li);
+      }
+      box.append(ol);
+    }
+    grid.append(box);
+  }
+  out.append(grid);
+
+  const total=terms.reduce((a,t)=>a+t.total,0);
+  const foot=el("div","sect");
+  foot.innerHTML=`<h3>How this was built</h3><p>${total} units across ${terms.length} terms.
+    Courses were placed in the earliest term where every prerequisite was already
+    satisfied by your record plus everything scheduled before it. A subject listed at
+    two levels, or cross-listed, is scheduled once. Subjects with arranged units are
+    skipped because they can't be packed against a unit cap.</p>
+    <p><b>Interests changed the order, not the eligibility.</b> Rebuild with a different
+    emphasis to see a contrasting option over the same feasible set. Subjects the catalog
+    marks "not offered regularly" are left out, because naming a term for them would
+    claim more than the catalog does.</p>`;
+  out.append(foot);
+}
+
+function renderData(){
+  const box=$("#checks"); box.textContent="";
+  for(const c of DATA.checks){
+    const r=el("div","checkrow");
+    const st = c.passed ? "pass" : (c.severity==="warning"?"warn":"fail");
+    r.append(el("div","st "+st, c.passed?"PASS":(c.severity==="warning"?"WARN":"FAIL")));
+    const d=el("div");
+    d.append(el("div",null,c.name));
+    d.append(el("div","hint",c.detail));
+    r.append(d);
+    box.append(r);
+  }
+}
+
+/* ---------------- profile UI ---------------- */
+function addTo(list,val){
+  const v=String(val||"").trim(); if(!v) return;
+  const arr=P[list];
+  if(!arr.map(x=>canon(x)).includes(canon(v))) arr.push(v);
+  save(); renderProfile(); refresh();
+}
+function removeFrom(list,val){
+  P[list]=P[list].filter(x=>x!==val); save(); renderProfile(); refresh();
+}
+function tagsInto(node,list,label){
+  node.textContent="";
+  if(!P[list].length){ node.append(el("span","hint","none yet")); return; }
+  for(const v of P[list]){
+    const t=el("span", list==="interests" ? "tag plain" : "tag");
+    t.append(document.createTextNode(v));
+    const b=el("button",null,"×");
+    b.setAttribute("aria-label","Remove "+v);
+    b.addEventListener("click",()=>removeFrom(list,v));
+    t.append(b); node.append(t);
+  }
+}
+function renderProfile(){
+  tagsInto($("#doneTags"),"done");
+  tagsInto($("#nowTags"),"now");
+  tagsInto($("#intTags"),"interests");
+  const sel=$("#pEmph"); const cur=sel.value;
+  sel.textContent="";
+  const opt=(v,l)=>{const o=el("option",null,l);o.value=v;return o;};
+  sel.append(opt("__all__", P.interests.length?"All my interests":"No emphasis"));
+  P.interests.forEach(i=>sel.append(opt(i,"Focus: "+i)));
+  sel.append(opt("__none__","Requirements-agnostic (no ranking)"));
+  if(cur) sel.value=cur;
+  if(!sel.value) sel.value="__all__";
+}
+function refresh(){
+  renderExplore();
+  if($("#view-eligible").classList.contains("on")) renderEligible();
+}
+
+/* ---------------- wiring ---------------- */
+function boot(){
+  load();
+
+  const dl=$("#subjects");
+  COURSES.forEach(c=>{ const o=el("option"); o.value=c.id; o.label=c.t; dl.append(o); });
+
+  const gb=$("#girBox");
+  GIRS.forEach(g=>{
+    const l=el("label");
+    const i=el("input"); i.type="checkbox"; i.style.width="auto";
+    i.checked=P.gir.includes(g);
+    i.addEventListener("change",()=>{
+      P.gir = i.checked ? [...new Set([...P.gir,g])] : P.gir.filter(x=>x!==g);
+      save(); refresh();
+    });
+    l.append(i, document.createTextNode(g.replace(" (GIR)","")));
+    gb.append(l);
+  });
+
+  $("#fYear").value=P.year||""; $("#fMajor").value=P.major||"";
+  $("#fPerm").checked=!!P.perm;
+  $("#fYear").addEventListener("change",e=>{P.year=e.target.value;save();});
+  $("#fMajor").addEventListener("input",e=>{P.major=e.target.value;save();});
+  $("#fPerm").addEventListener("change",e=>{P.perm=e.target.checked;save();refresh();});
+
+  const enterAdds=(sel,list)=>$(sel).addEventListener("keydown",e=>{
+    if(e.key!=="Enter") return;
+    e.preventDefault(); addTo(list,e.target.value); e.target.value="";
+  });
+  enterAdds("#fDone","done"); enterAdds("#fNow","now"); enterAdds("#fInt","interests");
+
+  $("#btnDemo").addEventListener("click",()=>{
+    P={year:"2",major:"6-4",done:["6.100A","6.100B","6.1010","6.1210"],now:["6.1200[J]"],
+       gir:["Calculus I (GIR)","Calculus II (GIR)","Physics I (GIR)","Physics II (GIR)"],
+       interests:["machine learning","robotics"],perm:false};
+    save(); syncInputs(); renderProfile(); refresh();
+  });
+  $("#btnClear").addEventListener("click",()=>{
+    P=blank(); save(); syncInputs(); renderProfile(); refresh();
+  });
+  function syncInputs(){
+    $("#fYear").value=P.year||""; $("#fMajor").value=P.major||"";
+    $("#fPerm").checked=!!P.perm;
+    [...gb.querySelectorAll("input")].forEach((i,ix)=>{ i.checked=P.gir.includes(GIRS[ix]); });
+  }
+
+  $("#q").addEventListener("input",renderExplore);
+  ["#fLevel","#fTerm","#fElig"].forEach(s=>
+    $(s).addEventListener("change",renderExplore));
+  ["#eTerm","#eLevel","#eSort"].forEach(s=>$(s).addEventListener("change",renderEligible));
+  $("#btnPlan").addEventListener("click",renderPlan);
+
+  const tabs=[["explore",renderExplore],["eligible",renderEligible],
+              ["plan",null],["data",renderData]];
+  tabs.forEach(([name,fn])=>{
+    $("#tab-"+name).addEventListener("click",()=>{
+      tabs.forEach(([n])=>{
+        $("#tab-"+n).setAttribute("aria-selected",String(n===name));
+        $("#view-"+n).classList.toggle("on",n===name);
+      });
+      if(fn) fn();
+    });
+  });
+
+  const when = DATA.fetched_at==="unknown" ? "no fetch date recorded" : DATA.fetched_at;
+  $("#srcChip").textContent = `Course 6 · ${COURSES.length} subjects · ${when}`;
+  $("#prov").innerHTML =
+    `Source: <code>${DATA.source_url}</code> — flattened snapshot `
+    + `<code>${DATA.snapshot}</code>, <code>${DATA.snapshot_sha256.slice(0,23)}…</code>, `
+    + `parsed ${new Date(DATA.generated_at).toISOString().slice(0,10)}. `
+    + `The snapshot itself carries no fetch date, so offerings may be out of date.`;
+
+  renderProfile(); renderExplore(); renderData();
+}
+boot();
+</script>

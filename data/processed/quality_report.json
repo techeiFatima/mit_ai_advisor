@@ -1,0 +1,93 @@
+{
+  "generated_at": "2026-08-25T06:01:51.301688+00:00",
+  "source_url": "https://catalog.mit.edu/subjects/6/",
+  "input": "mit_courses.txt",
+  "blocks_in": 423,
+  "records_out": 423,
+  "checks": [
+    {
+      "name": "every source block produced a record",
+      "passed": true,
+      "detail": "423 records from 423 blocks",
+      "severity": "error"
+    },
+    {
+      "name": "at least one record",
+      "passed": true,
+      "detail": "423 records",
+      "severity": "error"
+    },
+    {
+      "name": "subject numbers are unique",
+      "passed": true,
+      "detail": "0 duplicates",
+      "severity": "error"
+    },
+    {
+      "name": "title present",
+      "passed": true,
+      "detail": "100.0% of 423 records (threshold 95%)",
+      "severity": "error"
+    },
+    {
+      "name": "level present",
+      "passed": true,
+      "detail": "100.0% of 423 records (threshold 95%)",
+      "severity": "error"
+    },
+    {
+      "name": "at least one term",
+      "passed": true,
+      "detail": "100.0% of 423 records (threshold 95%)",
+      "severity": "error"
+    },
+    {
+      "name": "description present",
+      "passed": true,
+      "detail": "100.0% of 423 records (threshold 95%)",
+      "severity": "error"
+    },
+    {
+      "name": "prerequisite text captured",
+      "passed": true,
+      "detail": "100.0% of 423 records (threshold 95%)",
+      "severity": "error"
+    },
+    {
+      "name": "prerequisite tree parsed",
+      "passed": true,
+      "detail": "100.0% of 423 records (threshold 85%)",
+      "severity": "error"
+    },
+    {
+      "name": "numeric units where not 'arranged'",
+      "passed": true,
+      "detail": "100.0% of 423 records (threshold 99%)",
+      "severity": "error"
+    },
+    {
+      "name": "no record-level parse errors",
+      "passed": true,
+      "detail": "0 records with errors",
+      "severity": "warning"
+    },
+    {
+      "name": "communication (CI-M) attribute present somewhere",
+      "passed": false,
+      "detail": "no CI-M designation in any record - the flattened snapshot dropped this attribute class (6.UAT is a CI-M subject and lacks it)",
+      "severity": "warning"
+    },
+    {
+      "name": "REST attribute present somewhere",
+      "passed": true,
+      "detail": "REST found",
+      "severity": "error"
+    },
+    {
+      "name": "joint subjects have cross-listings",
+      "passed": true,
+      "detail": "96 records",
+      "severity": "error"
+    }
+  ]
+}
